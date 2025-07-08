@@ -1,0 +1,100 @@
+import Grid from "@mui/material/Grid";
+import { AuthLayout } from "../layout/AuthLayout";
+import TextField from "@mui/material/TextField";
+import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
+import Google from "@mui/icons-material/Google";
+import Typography from "@mui/material/Typography";
+import Link from "@mui/material/Link";
+import {Link as RouterLink} from 'react-router-dom';
+import type { FormEvent } from "react";
+
+export const LoginPage = () => {
+
+  const onSubmit = (event: FormEvent)=>{
+    event.preventDefault();
+
+  }
+
+  return (
+    <AuthLayout title="Login">
+      <form
+      onSubmit={onSubmit}
+      className=' animate__animated animate__fadeIn animate__faster'
+      aria-label="submit-form"
+      >
+        <Grid container>
+          <Grid size={12} sx={{ mt: 2 }}>
+            <TextField
+              label="Correo"
+              type="email"
+              placeholder="correo@google.com"
+              fullWidth
+              name="email"
+              value={""}
+              onChange={() => {}}
+            />
+          </Grid>
+
+          <Grid size={12} sx={{ mt: 2 }}>
+            <TextField
+              label="Password"
+              type="password"
+              placeholder="correo@google.com"
+              fullWidth
+              name="password"
+              value={""}
+              onChange={() => {}}
+            />
+          </Grid>
+
+          <Grid size={12} sx={{ mt: 2 }} display={"none"}>
+            <Alert severity="error">Error</Alert>
+          </Grid>
+
+          <Grid container size={12} spacing={2}>
+            <Grid
+              container
+              size={{ xs: 12, md: 6 }}
+              spacing={2}
+              sx={{ mb: 2, mt: 1 }}
+            >
+              <Button
+                variant="contained"
+                fullWidth
+                type="submit"
+                //disabled={isAuthenticated}
+              >
+                Login
+              </Button>
+            </Grid>
+
+            <Grid
+              container
+              size={{ xs: 12, md: 6 }}
+              spacing={2}
+              sx={{ mb: 2, mt: 1 }}
+            >
+              <Button
+                variant="contained"
+                fullWidth
+                //onClick={onGoogleSignIn}
+                //disabled={isAuthenticated}
+                aria-label="google-btn"
+              >
+                <Google />
+                <Typography sx={{ ml: 1 }}>Google</Typography>
+              </Button>
+            </Grid>
+          </Grid>
+
+          <Grid container sx={{ width: "100%" }} justifyContent="end">
+            <Link component={RouterLink} color="inherit" to="/auth/register">
+              Crear una cuenta
+            </Link>
+          </Grid>
+        </Grid>
+      </form>
+    </AuthLayout>
+  );
+};
