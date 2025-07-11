@@ -1,4 +1,4 @@
-import type { IAuthRep } from "../../repositories/auth/auth-repository";
+import type { IAuthRep } from "../../repositories/auth-repository";
 
 interface LogoutUseCase{
     execute(): Promise<void>

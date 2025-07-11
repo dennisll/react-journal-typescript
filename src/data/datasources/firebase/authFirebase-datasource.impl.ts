@@ -1,6 +1,6 @@
 import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { FirebaseAuth } from "../../../config/firabaseConfig";
-import type { IAuthDat } from "../../../domain/datasources/auth/auth-datasource";
+import type { IAuthDat } from "../../../domain/datasources/auth-datasource";
 import type { CreateUserDto } from "../../../domain/dtos/auth/create-user.dto";
 import type { LoginDto } from "../../../domain/dtos/auth/login.dto";
 import { User } from "../../../domain/entities/user";

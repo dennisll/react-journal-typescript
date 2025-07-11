@@ -1,8 +1,8 @@
-import type { IAuthDat } from "../../domain/datasources/auth/auth-datasource";
+import type { IAuthDat } from "../../domain/datasources/auth-datasource";
 import type { CreateUserDto } from "../../domain/dtos/auth/create-user.dto";
 import type { LoginDto } from "../../domain/dtos/auth/login.dto";
 import type { User } from "../../domain/entities/user";
-import type { IAuthRep } from "../../domain/repositories/auth/auth-repository";
+import type { IAuthRep } from "../../domain/repositories/auth-repository";
 
 
 export class AuthRepository implements IAuthRep{

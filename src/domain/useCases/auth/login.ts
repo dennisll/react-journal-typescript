@@ -1,6 +1,6 @@
 import type { LoginDto } from "../../dtos/auth/login.dto";
 import type { User } from "../../entities/user";
-import type { IAuthRep } from "../../repositories/auth/auth-repository";
+import type { IAuthRep } from "../../repositories/auth-repository";
 
 
 interface LoginUseCase{

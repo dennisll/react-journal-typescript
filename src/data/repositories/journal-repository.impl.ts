@@ -1,8 +1,8 @@
-import type { IJournalDat } from "../../domain/datasources/journal/journal-repository";
+import type { IJournalDat } from "../../domain/datasources/journal-repository";
 import type { CreateJournalDto } from "../../domain/dtos/journal/create-journal.dto";
 import type { UpdateJournalDto } from "../../domain/dtos/journal/update-journal.dto";
 import type { Journal } from "../../domain/entities/journal";
-import type { IJournalRep } from "../../domain/repositories/journal/journal-repository";
+import type { IJournalRep } from "../../domain/repositories/journal-repository";
 
 
 export class JournalRepository implements IJournalRep{

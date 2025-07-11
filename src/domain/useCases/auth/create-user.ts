@@ -1,6 +1,6 @@
 import { CreateUserDto } from "../../dtos/auth/create-user.dto";
 import type { User } from "../../entities/user";
-import type { IAuthRep } from "../../repositories/auth/auth-repository";
+import type { IAuthRep } from "../../repositories/auth-repository";
 
 interface CreateUserUseCase{
     execute(dto: CreateUserDto): Promise<User>
