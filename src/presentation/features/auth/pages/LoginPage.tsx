@@ -8,16 +8,43 @@ import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
 import {Link as RouterLink} from 'react-router-dom';
 import type { FormEvent } from "react";
+import { useForm } from "../../../hooks/useForm";
+import { useAuthStore } from "../../../redux/authSlice/useAuthStore";
+
+/* interface InitialForm{
+  email: string;
+  password: string;
+} */
+
+const initialForm = {
+  email: '',
+  password: '',
+};
 
 export const LoginPage = () => {
 
+  const {formState, onInputChange, onResetForm} = useForm(initialForm);
+
+  const {
+    startLoginWithEmailAndPassword, 
+    startGoogleSingIn} = useAuthStore();
+
   const onSubmit = (event: FormEvent)=>{
+
     event.preventDefault();
+
+    startLoginWithEmailAndPassword(formState);
 
   }
 
+ const onGoogleSignIn = async()=>{
+
+    await startGoogleSingIn();
+ }
+
   return (
     <AuthLayout title="Login">
+
       <form
       onSubmit={onSubmit}
       className=' animate__animated animate__fadeIn animate__faster'
@@ -31,8 +58,8 @@ export const LoginPage = () => {
               placeholder="correo@google.com"
               fullWidth
               name="email"
-              value={""}
-              onChange={() => {}}
+              value={formState.email}
+              onChange={onInputChange}
             />
           </Grid>
 
@@ -43,8 +70,8 @@ export const LoginPage = () => {
               placeholder="correo@google.com"
               fullWidth
               name="password"
-              value={""}
-              onChange={() => {}}
+              value={formState.password}
+              onChange={onInputChange}
             />
           </Grid>
 
@@ -78,7 +105,7 @@ export const LoginPage = () => {
               <Button
                 variant="contained"
                 fullWidth
-                //onClick={onGoogleSignIn}
+                onClick={onGoogleSignIn}
                 //disabled={isAuthenticated}
                 aria-label="google-btn"
               >

@@ -6,47 +6,46 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
 import { useNavigate } from "react-router-dom";
+import { useAppSelector } from "../../redux/reduxHooks";
+
+const routes = ["/register", "/journal", "/client"];
 
 export const CustomDrawer = () => {
+
+  const user = useAppSelector( state => state.auth.user);
+
   const navigate = useNavigate();
 
-  const navigateToJournal = () => {
-    navigate("/journal");
+  const navigateTo = (url: string) => {
+    navigate(url);
   };
-  const navigateToRegister = () => {
-    navigate("/register");
-  };
+
+  const name = user?.displayName.toUpperCase();
 
   return (
     <div>
       <Toolbar>
-        <Typography variant="h6" noWrap component="div">
-          Responsive drawer
+        <Typography variant="h6" noWrap component="div" >
+          {name}
         </Typography>
       </Toolbar>
 
       <Divider />
       <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={navigateToRegister}>
-            <ListItemIcon>
-              <AccessTimeOutlinedIcon />
-            </ListItemIcon>
-            <ListItemText primary="Register" />
-          </ListItemButton>
-        </ListItem>
-
-        <ListItem disablePadding>
-          <ListItemButton onClick={navigateToJournal}>
+        {
+          routes.map( url => (
+            <ListItem key={url} disablePadding>
+          <ListItemButton onClick={() => navigateTo(url)}>
             <ListItemIcon>
               <TaskAltOutlinedIcon />
             </ListItemIcon>
-            <ListItemText primary="Journal" />
+            <ListItemText primary={url.split('/').at(1)?.toUpperCase()} />
           </ListItemButton>
         </ListItem>
+          ))
+        }
       </List>
     </div>
   );

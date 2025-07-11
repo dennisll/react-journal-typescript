@@ -1,11 +1,11 @@
 import { AppLayout } from "../../../shared/layout/AppLayout";
-import { RegisterView } from "../views/RegisterView";
+import { CreateClientView } from "../views/ClientView";
 
 
 export const CreateClientPage = () => {
   return (
     <AppLayout>
-       <RegisterView/>
+       <CreateClientView/>
     </AppLayout>
   );
 };

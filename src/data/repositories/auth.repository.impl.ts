@@ -11,6 +11,10 @@ export class AuthRepository implements IAuthRep{
     constructor(
         private readonly authDatasource: IAuthDat
     ){}
+
+    loginWithGoogle(): Promise<User> {
+        return this.authDatasource.loginWithGoogle();
+    }
     createUser(createUserDto: CreateUserDto): Promise<User> {
         return this.authDatasource.createUser(createUserDto);
     }

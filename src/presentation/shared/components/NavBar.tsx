@@ -5,6 +5,8 @@ import Typography from "@mui/material/Typography";
 import MenuIcon from "@mui/icons-material/Menu";
 import Grid from "@mui/material/Grid";
 import LogoutOutlined from "@mui/icons-material/LogoutOutlined";
+import { useAuthStore } from "../../redux/authSlice/useAuthStore";
+import { useLocation } from "react-router-dom";
 //import { useCustomLayout} from '../hooks/useLayout';
 
 interface Props {
@@ -14,10 +16,16 @@ interface Props {
 
 export const NavBar = (props: Props) => {
 
+  const {pathname} = useLocation();
+
+  const namePage = pathname.split('/').at(1)?.toUpperCase();
+  
+  const {startLogout} = useAuthStore();
+
   const { drawerWidth = 280, handleDrawerToggle } = props;
   
-  const onLogout = ()=>{
-
+  const onLogout = async ()=>{
+      await startLogout();
   }
 
   return (
@@ -46,8 +54,7 @@ export const NavBar = (props: Props) => {
           alignItems="center"
         >
           <Typography variant="h6" noWrap component="div">
-            {" "}
-            JournalApp{" "}
+            {namePage}
           </Typography>
 
           <IconButton color="error" onClick={onLogout}>
