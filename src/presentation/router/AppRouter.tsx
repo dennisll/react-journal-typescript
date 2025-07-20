@@ -7,6 +7,7 @@ import { ClientRoutes } from "../features/clients/routes/ClientRoutes";
 import { JournalRoutes } from "../features/journal/routes/JournalRoutes";
 
 export const AppRouter = () => {
+
   const { status } = useCheckAuth();
 
   if (status === "checking") return <Checking />;

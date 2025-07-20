@@ -9,5 +9,5 @@ export interface IRegisterRep{
     update (updateRegisterDto: UpdateRegisterDto): Promise<Register>
     delete (id: string): Promise<Register>
     getRegister (id: string): Promise<Register>
-    getRegisters (): Promise<Register []>
+    getRegisters (object: { [key: string]: string}): Promise<Register []>
 }

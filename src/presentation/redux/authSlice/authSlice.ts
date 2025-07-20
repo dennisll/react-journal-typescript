@@ -5,13 +5,15 @@ import type { User } from '../../../domain';
 
 interface AuthState{
     status: string,
-    user?: User | null,
-    errorMessage?: string | null
+    user: User | null,
+    errorMessage: string | null
 }
 
 const initialState: AuthState =
 {
     status: 'checking',
+    user: null,
+    errorMessage: null
 }
 
 export const authSlice = createSlice({

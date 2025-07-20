@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "../redux/store";
 import { FirebaseAuth } from "../../config/firabaseConfig";
 import { login, logout } from "../redux/authSlice/authSlice";
-import { User } from "../../domain";
+import { User as UserEntity} from "../../domain";
 
 
 export const useCheckAuth = () => {
@@ -19,9 +19,17 @@ export const useCheckAuth = () => {
 
       if (!user) return dispatch(logout());
 
-      const userEntity = User.getUserFromObject(user);
+      const {uid, emailVerified, displayName, email} = FirebaseAuth.currentUser!;
+  
+      const userAuth = new UserEntity(
+        uid,
+        displayName!,
+        email!,
+        emailVerified,
+        ""
+      );
 
-      dispatch(login(userEntity));
+      dispatch(login(userAuth));
       //dispatch(startLoadingNotes());
     });
   }, []);

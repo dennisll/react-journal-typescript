@@ -1,4 +1,4 @@
-import type { IJournalDat } from "../../domain/datasources/journal-repository";
+import type { IJournalDat } from "../../domain/datasources/journal-datasource";
 import type { CreateJournalDto } from "../../domain/dtos/journal/create-journal.dto";
 import type { UpdateJournalDto } from "../../domain/dtos/journal/update-journal.dto";
 import type { Journal } from "../../domain/entities/journal";
@@ -23,8 +23,8 @@ export class JournalRepository implements IJournalRep{
         return this.journalDatasource.getJournal(id);
     }
 
-    getJournals(): Promise<Journal[]> {
-        return this.journalDatasource.getJournals();
+    getJournals(object: { [key: string]: string}): Promise<Journal[]> {
+        return this.journalDatasource.getJournals(object);
     }
 
     deleteJournal(id: string): Promise<Journal> {

@@ -1,13 +1,13 @@
 //import { NothingSelectedView } from "../views/NothingSelectedView";
 
 import { AppLayout } from "../../../shared/layout/AppLayout";
-import { JournalSearchView } from "../views/JournalsSearchView";
+import { CreateJournalView } from "../views/CreateJournalView";
 
-export const JournalSearchPage = () => {
+export const CreateJournalPage = () => {
 
   return (
     <AppLayout>
-       <JournalSearchView/> 
+       <CreateJournalView/> 
   </AppLayout>
   );
 };

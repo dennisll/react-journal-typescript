@@ -1,61 +1,49 @@
-import Grid from "@mui/material/Grid"
-import Typography from "@mui/material/Typography"
-
-
-const list = [
-    {
-        id: 'string1',
-        idUser: 'string',
-        timeMorningIn: 'data de tipo number',
-        timeMorningOut: 'data de tipo number',
-        timeAfternoonIn: 'data de tipo number',
-        timeAfternoonOut: 'data de tipo number',
-        extraTime: 'data de tipo number'
-    },
-    {
-        id: 'string2',
-        idUser: 'string',
-        timeMorningIn: 'data de tipo number',
-        timeMorningOut: 'data de tipo number',
-        timeAfternoonIn: 'data de tipo number',
-        timeAfternoonOut: 'data de tipo number',
-        extraTime: 'data de tipo number'
-    },
-    {
-        id: 'string3',
-        idUser: 'string',
-        timeMorningIn: 'data de tipo number',
-        timeMorningOut: 'data de tipo number',
-        timeAfternoonIn: 'data de tipo number',
-        timeAfternoonOut: 'data de tipo number',
-        extraTime: 'data de tipo number'
-    },
-    {
-        id: 'string4',
-        idUser: 'string',
-        timeMorningIn: 'data de tipo number',
-        timeMorningOut: 'data de tipo number',
-        timeAfternoonIn: 'data de tipo number',
-        timeAfternoonOut: 'data de tipo number',
-        extraTime: 'data de tipo number'
-    }
-
-]
+import Grid from "@mui/material/Grid";
+import Typography from "@mui/material/Typography";
+import { useRegisterStore } from "../../../redux/registerSlice/useRegisterStore";
+import { useEffect } from "react";
+import { useAppSelector } from "../../../redux/reduxHooks";
+import { Button, CircularProgress, Toolbar } from "@mui/material";
+import type { Register } from "../../../../domain/entities/register";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 export const RegisterSearchView = () => {
+  const { onGetRegisters, onDeleteRegister, onSetActiveRegister } =
+    useRegisterStore();
+  const { registers, isLoading, active } = useAppSelector((state) => state.register);
+
+  const params = new URLSearchParams(location.search);
+  const idUser = params.get("idUser") ? (params.get("idUser") as string) : "";
+  const data = params.get("data") ? (params.get("data") as string) : "";
+
+  const deleteRegister = (register: Register) => {
+    onSetActiveRegister(register);
+    onDeleteRegister(register.id);
+  };
+
+  useEffect(() => {
+    onGetRegisters({ idUser, data });
+  }, []);
+
   return (
     <Grid>
-        { list.map( register => (
-            <Grid key={register.id} container sx={{display: 'flex'}}>
+      {registers?.map((register) => (
+        <Grid key={register.id} container sx={{ display: "flex" }}>
+          <Toolbar>
+            <Typography sx={{ mr: 2 }}>{register.createdAt}</Typography>
+            <Typography sx={{ mr: 2 }}>{register.lat}</Typography>
+            <Typography sx={{ mr: 2 }}>{register.long}</Typography>
+            <Typography sx={{ mr: 2 }}>{register.imageUrl}</Typography>
+            {/* <Button onClick={() => updateRegister(register)}>Edit</Button> */}
 
-               <Typography>{register.timeMorningIn}</Typography>
-               <Typography>{register.timeMorningOut}</Typography>
-               <Typography>{register.timeAfternoonIn}</Typography>
-               <Typography>{register.timeAfternoonOut}</Typography>
-               <Typography>{register.extraTime}</Typography>
-            </Grid>
-            
-        ))}
+            {(isLoading && active?.id === register.id) ? (
+              <CircularProgress />
+            ) : (
+              <Button onClick={() => deleteRegister(register)}><DeleteIcon sx={{color: 'error.main'}}/> </Button>
+            )}
+          </Toolbar>
+        </Grid>
+      ))}
     </Grid>
-  )
-}
+  );
+};

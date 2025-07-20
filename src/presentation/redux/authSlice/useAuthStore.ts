@@ -1,6 +1,6 @@
 import { useDispatch } from "react-redux";
 import { checkingCredentials, login, logout } from "./authSlice";
-import { LoginDto } from "../../../domain";
+import { CreateUserDto, LoginDto } from "../../../domain";
 import { AuthFirebaseDatasource, AuthRepository } from "../../../data";
 
 const authFirebaseDatasource = new AuthFirebaseDatasource();
@@ -18,12 +18,20 @@ export const useAuthStore = () => {
     };
   }
 
-  const startCreatingUserWithEmailPassword = (formData: {[key: string]: string} ) => {
+  const startCreatingUserWithEmailPassword = async (formData: {[key: string]: string} ) => {
 
-    // TODO llamar a la funcion de crear user de firebase
+    dispatch(checkingCredentials());
 
-    console.log(formData);
-    //dispatch(login(user));
+    const [error, userDto] = CreateUserDto.create(formData);
+
+    if(error){
+      console.log(error);
+      return;
+    }
+    
+    const user = await authRepository.createUser(userDto!);
+
+    dispatch(login(user));
   }
 
   const startGoogleSingIn = async ()=> {
@@ -31,8 +39,6 @@ export const useAuthStore = () => {
     dispatch(checkingCredentials());
 
     const user = await authRepository.loginWithGoogle();
-
-    console.log(user);
 
     dispatch(login(user));
 

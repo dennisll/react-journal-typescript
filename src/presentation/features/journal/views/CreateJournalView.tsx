@@ -1,33 +1,70 @@
-import DeleteOutline from "@mui/icons-material/DeleteOutline";
 import SaveOutlined from "@mui/icons-material/SaveOutlined";
 import UploadOutlined from "@mui/icons-material/UploadOutlined";
-import { Button, IconButton, ImageListItem, TextField } from "@mui/material";
+import {
+  Alert,
+  Button,
+  Card,
+  CardMedia,
+  IconButton,
+  TextField,
+} from "@mui/material";
 import Grid from "@mui/material/Grid";
-import Typography from "@mui/material/Typography";
-import { useRef, type ChangeEvent } from "react";
-import ListOutlinedIcon from "@mui/icons-material/ListOutlined";
+import { useEffect, useRef, type ChangeEvent, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import { useJournalStore } from "../../../redux/journalSlice/useJournalStore";
+import { useForm } from "../../../hooks/useForm";
+import { useAppSelector } from "../../../redux/reduxHooks";
+import { CustomSelect } from "../components/CustomSelect";
+import { useClientStore } from "../../../redux/clientSlice/useClientStore";
 
-export const CreateJournal = () => {
+let photoUrls: string[];
+
+export const CreateJournalView = () => {
+  const { onCreateJournal, onUploadImagens } = useJournalStore();
+
+  const { isLoading, errorMessage } = useAppSelector((state) => state.journal);
+  const clients = useAppSelector((state) => state.client.clients);
+  const user = useAppSelector((state) => state.auth.user);
+
+  const { onGetClients } = useClientStore();
+
+  const initialForm = {
+    title: "",
+    description: "",
+    nameClient: "",
+  };
+
+  const { formState, onInputChange, onResetForm} = useForm(initialForm, {});
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const navigate = useNavigate();
 
-  const onInputChange = ({ target }: ChangeEvent<HTMLInputElement>) => {
-    console.log(target.files);
+  const onFileInputChange = async ({
+    target,
+  }: ChangeEvent<HTMLInputElement>) => {
+    const { files } = target;
+    photoUrls = await onUploadImagens(files!);
   };
-
-  const onFileInputChange = ({ target }: ChangeEvent<HTMLInputElement>) => {
-    console.log(target.files);
-  };
-
-  const onSaveNote = () => {};
-
-  const onDelete = () => {};
 
   const navigatetoJournals = () => {
-    navigate("/journal/search");
+    navigate(`/journal/search?idUser=${user!.id}`);
   };
+
+  const onSubmit = (event: FormEvent) => {
+
+    event.preventDefault();
+
+    const data = { ...formState, idUser: user!.id, imageUrls: photoUrls };
+
+    onCreateJournal(data);
+    onResetForm();
+  };
+
+  useEffect(() => {
+    onGetClients();
+  }, []);
 
   return (
     <>
@@ -35,8 +72,6 @@ export const CreateJournal = () => {
         sx={{
           display: "flex",
           flexDirection: "row-reverse",
-          //p: 1,
-          //m: 1,
           bgcolor: "background.paper",
           borderRadius: 1,
         }}
@@ -46,97 +81,119 @@ export const CreateJournal = () => {
           sx={{ padding: 2 }}
           onClick={navigatetoJournals}
         >
-          <ListOutlinedIcon sx={{ fontSize: 30, mr: 1 }} />
+          <ArrowForwardIcon sx={{ fontSize: 30, mr: 1 }} />
           Journals
         </Button>
       </Grid>
 
-      <Grid sx={{pb:5}}>
-         <ImageListItem>
-            <img src="/src/assets/trabajo-equipo-ti-recluit.jpg" alt="" />
-         </ImageListItem>
-      </Grid>
-
       <Grid sx={{ display: "flex" }}>
-
         <Grid
           className=" animate__animated animate__fadeIn animate__faster"
           container
           direction="column"
           alignItems="center"
-          //justifyContent="center"
+          justifyContent="center"
           sx={{
             minHeight: "calc(100vh - 110px)",
             borderRadius: 3,
-            //width: { xs: `calc(100%)`, sm: `calc(100% - ${drawerWidth}px)` },
             width: 1,
-          }}
+            padding: 2,
+          }}        
         >
-          <Grid sx={{padding: 2}}>
-            <Typography color="primary" variant="h5">
-              Create journal
-            </Typography>
-          </Grid>
-
-          <Grid container sx={{ width: "100%" }}>
-
-            <TextField
-              type="text"
-              variant="filled"
-              fullWidth
-              placeholder="Ingrese un título"
-              label="Título"
-              sx={{ border: "none", mb: 1 }}
-              name="title"
-              //value={title}
-              onChange={onInputChange}
-            />
-
-            <TextField
-              type="text"
-              variant="filled"
-              fullWidth
-              multiline
-              placeholder="¿Qué sucedió en el día de hoy?"
-              minRows={5}
-              name="body"
-              //value={body}
-              onChange={onInputChange}
-            />
+          <Grid 
+          container
+          size={{lg: 8.2, md:9.2, sm: 12}}
+          sx={{ pb: 5 }}>
+            <Card  
+              sx={{ 
+                minWidth: '70%',
+              }}
+            >
+              <CardMedia
+                component="img"
+                sx={{ 
+                  borderRadius: "300px", 
+                  
+                }}
+                image="/src/assets/header-1440x768.jpg"
+                alt="Imagen con bordes redondeados"
+              />
+            </Card>
           </Grid>
 
           <Grid>
-            <input
-              type="file"
-              multiple
-              ref={fileInputRef}
-              onChange={onFileInputChange}
-              style={{ display: "none" }}
-            />
-            <IconButton
-              color="primary"
-              //disabled={isSaving}
-              onClick={() => fileInputRef.current!.click()}
-            >
-              <UploadOutlined />
-            </IconButton>
 
-            <Button
-              //disabled={isSaving}
-              color="primary"
-              sx={{ padding: 2 }}
-              onClick={onSaveNote}
-            >
-              <SaveOutlined sx={{ fontSize: 30, mr: 1 }} />
-              Guardar
-            </Button>
-          </Grid>
+              <form onSubmit={onSubmit} aria-label="submit-form">
+                <Grid container>
+                    <Grid size={12} sx={{ mt: 2 }}>
+                      <TextField
+                        type="text"
+                        fullWidth
+                        placeholder="Ingrese un título"
+                        label="Title"
+                        sx={{ border: "none", mb: 1 }}
+                        name="title"
+                        value={formState.title}
+                        onChange={onInputChange}
+                      />
+                    </Grid>
 
-          <Grid container justifyContent="end">
-            <Button onClick={onDelete} sx={{ mt: 2 }} color="error">
-              <DeleteOutline />
-              Borrar
-            </Button>
+                    <CustomSelect
+                      name="nameClient"
+                      initialData={clients!}
+                      value={formState.nameClient}
+                      onSelectChange={onInputChange}
+                    />
+
+                  <Grid size={12} sx={{ mt: 2 }}>
+                    <TextField
+                      type="text"
+                      label="Description"
+                      fullWidth
+                      multiline
+                      placeholder="¿Qué sucedió en el día de hoy?"
+                      minRows={5}
+                      name="description"
+                      value={formState.description}
+                      onChange={onInputChange}
+                    />
+                  </Grid>
+
+                  <Grid size={12} sx={{ mt: 2, display: "flex" }}>
+                    <input
+                      type="file"
+                      multiple
+                      ref={fileInputRef}
+                      onChange={onFileInputChange}
+                      style={{ display: "none" }}
+                    />
+                    <IconButton
+                      color="primary"
+                      disabled={isLoading}
+                      onClick={() => fileInputRef.current!.click()}
+                    >
+                      <UploadOutlined />
+                    </IconButton>
+
+                    <Button
+                      disabled={isLoading}
+                      type="submit"
+                      color="primary"
+                      sx={{ padding: 2 }}
+                    >
+                      <SaveOutlined sx={{ fontSize: 30, mr: 1 }} />
+                      Create
+                    </Button>
+                  </Grid>
+                  <Grid
+                    size={12}
+                    sx={{ mt: 2 }}
+                    display={errorMessage !== null ? "" : "none"}
+                  >
+                    <Alert severity="error">Error</Alert>
+                  </Grid>
+                </Grid>
+              </form>
           </Grid>
         </Grid>
       </Grid>

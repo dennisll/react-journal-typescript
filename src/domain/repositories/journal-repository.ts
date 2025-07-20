@@ -8,6 +8,6 @@ export interface IJournalRep{
     createJournal (dto: CreateJournalDto): Promise<Journal>;
     updateJournal (dto: UpdateJournalDto): Promise<Journal>;
     getJournal (id: string): Promise<Journal>;
-    getJournals (): Promise<Journal []>;
+    getJournals (object: { [key: string]: string}): Promise<Journal []>;
     deleteJournal (id: string): Promise<Journal>;
 }

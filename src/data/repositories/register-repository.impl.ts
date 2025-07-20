@@ -18,7 +18,7 @@ export class RegisterRepository implements IRegisterRep{
     getRegister(id: string): Promise<Register> {
         return this.registerDatasource.getRegister(id);
     }
-    getRegisters(): Promise<Register[]> {
-        return this.registerDatasource.getRegisters();
+    getRegisters (object: { [key: string]: string}): Promise<Register []> {
+        return this.registerDatasource.getRegisters(object);
     }
 }

@@ -22,13 +22,11 @@ export const CustomDrawer = () => {
     navigate(url);
   };
 
-  const name = user?.displayName.toUpperCase();
-
   return (
     <div>
       <Toolbar>
         <Typography variant="h6" noWrap component="div" >
-          {name}
+          {user?.displayName.toUpperCase()}
         </Typography>
       </Toolbar>
 

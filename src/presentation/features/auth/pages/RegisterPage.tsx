@@ -4,14 +4,26 @@ import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import { AuthLayout } from "../layout/AuthLayout";
 import type { FormEvent } from "react";
+import { useForm } from "../../../hooks/useForm";
+import { useAuthStore } from "../../../redux/authSlice/useAuthStore";
+
+const initialForm = {
+  email: '',
+  password: '',
+  displayName: ''
+};
 
 export const RegisterPage = () => {
+
+  const {formState, onInputChange} = useForm(initialForm);
+
+  const {startCreatingUserWithEmailPassword} = useAuthStore();
 
   const errorMessage = '';
 
     const onSubmit = (event: FormEvent)=>{
       event.preventDefault();
-  
+      startCreatingUserWithEmailPassword(formState);
     }
   
   return (
@@ -25,12 +37,12 @@ export const RegisterPage = () => {
           <Grid size={12} sx={{ mt: 2 }}>
             <TextField
               label="Name"
-              type="name"
+              type="text"
               placeholder="Enter your name"
               fullWidth
-              name="name"
-              value={""}
-              onChange={() => {}}
+              name="displayName"
+              value={formState.displayName}
+              onChange={onInputChange}
             />
           </Grid>
 
@@ -41,8 +53,8 @@ export const RegisterPage = () => {
               placeholder="correo@google.com"
               fullWidth
               name="email"
-              value={""}
-              onChange={() => {}}
+              value={formState.email}
+              onChange={onInputChange}
             />
           </Grid>
 
@@ -53,8 +65,8 @@ export const RegisterPage = () => {
               placeholder="*********"
               fullWidth
               name="password"
-              value={""}
-              onChange={() => {}}
+              value={formState.password}
+              onChange={onInputChange}
             />
           </Grid>
 

@@ -1,36 +1,43 @@
+import type { SelectChangeEvent } from "@mui/material/Select";
+import { useState, type ChangeEvent } from "react";
 
+export const useForm = (initialForm: { [key: string]: string }, initialSelects: { [key: string] : string []}) => {
 
-import { useState, type ChangeEvent } from 'react';
+  const [formState, setFormState] = useState(initialForm);
+  const [selecInput, setSelecInput] = useState(initialSelects);
 
-/* interface User {
-    username: string;
-    email: string;
-    password: string;
-} */
+  const onInputChange = ({ target }: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>) => {
 
-export const useForm = ( initialForm: { [key: string] : string} ) => {
-  
-    const [ formState, setFormState ] = useState( initialForm );
+    const { name, value } = target;
 
-    const onInputChange = ({ target }: ChangeEvent<HTMLInputElement>) => {
+    setFormState({
+      ...formState,
+      [name]: value,
+    });
+  }
 
-        const { name, value } = target;
-        
-        setFormState({
-            ...formState,
-            [ name ]: value
-        });
-    }
-
-    const onResetForm = () => {''
-        setFormState( initialForm );
-    }
+  const onSelectMultipleChange = ({target}: SelectChangeEvent<string [] >) => {
     
+    const { name, value } = target;
 
-    return {
-        //...formState,
-        formState,
-        onInputChange,
-        onResetForm,
-    }
+    setSelecInput({
+      ...initialSelects,
+    // On autofill we get a stringified value.
+    [name]: value as Array<string>
+  });
+  };
+
+  const onResetForm = () => {
+    setFormState(initialForm);
+  };
+
+  return {
+    //...formState,
+    formState,
+    selecInput,
+    onInputChange,
+    onSelectMultipleChange,
+    onResetForm,
+  };
 }
+

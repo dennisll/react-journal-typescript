@@ -23,7 +23,7 @@ const initialForm = {
 
 export const LoginPage = () => {
 
-  const {formState, onInputChange, onResetForm} = useForm(initialForm);
+  const {formState, onInputChange} = useForm(initialForm);
 
   const {
     startLoginWithEmailAndPassword, 

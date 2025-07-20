@@ -1,50 +1,93 @@
-import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  updateProfile,
+} from "firebase/auth";
 import { FirebaseAuth } from "../../../config/firabaseConfig";
 import type { IAuthDat } from "../../../domain/datasources/auth-datasource";
 import type { CreateUserDto } from "../../../domain/dtos/auth/create-user.dto";
 import type { LoginDto } from "../../../domain/dtos/auth/login.dto";
-import { User } from "../../../domain/entities/user";
+import { User as UserEntity } from "../../../domain/entities/user";
 
-export class AuthFirebaseDatasource implements IAuthDat{
+export class AuthFirebaseDatasource implements IAuthDat {
+
+  
+  async loginWithGoogle(): Promise<UserEntity> {
+
+    const googleProvider = new GoogleAuthProvider();
+
+    await signInWithPopup(FirebaseAuth, googleProvider);
+
+    const {uid, emailVerified, displayName, email} = FirebaseAuth.currentUser!;
+
+    const userAuth = new UserEntity(
+      uid,
+      displayName!,
+      email!,
+      emailVerified,
+      ""
+    );
+
+    localStorage.setItem("user", JSON.stringify(userAuth));
+
+    return userAuth;
+  }
 
 
-    async loginWithGoogle(): Promise<User> {
-        
-        const googleProvider = new GoogleAuthProvider();
+  async createUser(createUserDto: CreateUserDto): Promise<UserEntity> {
+    const { email, displayName, password } = createUserDto;
 
-        const {user} = await signInWithPopup(FirebaseAuth, googleProvider);
+    await createUserWithEmailAndPassword(FirebaseAuth, email, password);
 
-        return User.getUserFromObject(user);
+    await updateProfile(FirebaseAuth.currentUser!, { displayName });
 
-    }
+    const userFirebase = FirebaseAuth.currentUser!;
 
-    createUser(createUserDto: CreateUserDto): Promise<User> {
+    const {uid, emailVerified} = userFirebase;
 
-        throw new Error("Method not implemented.");
-    }
+    const userAuth = new UserEntity(
+      uid,
+      userFirebase.displayName!,
+      userFirebase.email!,
+      emailVerified,
+      ""
+    );
 
-    async login(loginDto: LoginDto): Promise<User> {
-        
-        const {email, password} = loginDto;
+    localStorage.setItem("user", JSON.stringify(userAuth));
 
-        const resp = await signInWithEmailAndPassword(
-              FirebaseAuth,
-              email,
-              password
-            );
+    return userAuth;
+  }
 
-        const userMapped = User.getUserFromObject({...resp.user});
 
-        localStorage.setItem('user', JSON.stringify(userMapped));
+  async login(loginDto: LoginDto): Promise<UserEntity> {
 
-        return userMapped;
+    const { email, password } = loginDto;
 
-    }
+    await signInWithEmailAndPassword(FirebaseAuth, email, password);
 
-    async logout(): Promise<void> {
-        
-        await FirebaseAuth.signOut();
-        localStorage.removeItem('user');
-    }
-    
+    const userFirebase = FirebaseAuth.currentUser!;
+
+    const {uid, emailVerified, displayName} = userFirebase;
+
+    const userAuth = new UserEntity(
+      uid,
+      displayName!,
+      userFirebase.email!,
+      emailVerified,
+      ""
+    );
+
+    localStorage.setItem("user", JSON.stringify(userAuth));
+
+    return userAuth;
+  }
+
+
+  async logout(): Promise<void> {
+
+    await FirebaseAuth.signOut();
+    localStorage.removeItem("user");
+  }
 }
