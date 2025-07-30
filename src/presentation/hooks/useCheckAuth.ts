@@ -1,37 +1,39 @@
-import { onAuthStateChanged } from "firebase/auth";
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import type { RootState } from "../redux/store";
-import { FirebaseAuth } from "../../config/firabaseConfig";
-import { login, logout } from "../redux/authSlice/authSlice";
-import { User as UserEntity} from "../../domain";
+//import { onAuthStateChanged } from "firebase/auth";
+//import { useEffect } from "react";
+///import { useDispatch, useSelector } from "react-redux";
+//import type { RootState } from "../redux/store";
+//import { FirebaseAuth } from "../../config/firabaseConfig";
+//import { login, logout } from "../redux/authSlice/authSlice";
+//import { User as UserEntity} from "../../domain";
 
+import { jwtDecode } from "jwt-decode";
+import { useAppDispatch, useAppSelector } from "../redux/reduxHooks";
+import { login, logout } from "../redux/authSlice/authSlice";
+import { useEffect } from "react";
 
 export const useCheckAuth = () => {
-  
-  const { status } = useSelector((state: RootState) => state.auth);
-  
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
+
+  const { status } = useAppSelector((state) => state.auth);
+
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    
-    onAuthStateChanged(FirebaseAuth, async (user) => {
+    dispatch(logout());
 
-      if (!user) return dispatch(logout());
+    if (token !== null) {
+      const decode = jwtDecode(token);
 
-      const {uid, emailVerified, displayName, email} = FirebaseAuth.currentUser!;
-  
-      const userAuth = new UserEntity(
-        uid,
-        displayName!,
-        email!,
-        emailVerified,
-        ""
-      );
+      const time = new Date().getSeconds();
 
-      dispatch(login(userAuth));
-      //dispatch(startLoadingNotes());
-    });
+      if (time > decode.exp!) {
+        dispatch(logout());
+      }
+
+      const { displayName, email } = decode as { [key: string]: string };
+
+      dispatch(login({ displayName: displayName, email: email }));
+    }
   }, []);
 
   return { status };

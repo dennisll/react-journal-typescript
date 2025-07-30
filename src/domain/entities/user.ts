@@ -3,15 +3,14 @@
 export class User{
 
     constructor(
-        public id: string,
         public displayName: string,
         public email: string,
-        public emailValidated: boolean,
-        public password: string,
+        public emailValidated?: boolean,
+        public password?: string,
         public host?: string,
         public imgUrl?: string,
         public role?: string [],
-        
+        public id?: string,
       ) {}
 
 

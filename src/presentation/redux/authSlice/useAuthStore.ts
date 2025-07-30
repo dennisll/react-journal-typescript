@@ -1,77 +1,85 @@
 import { useDispatch } from "react-redux";
-import { checkingCredentials, login, logout } from "./authSlice";
-import { CreateUserDto, LoginDto } from "../../../domain";
-import { AuthFirebaseDatasource, AuthRepository } from "../../../data";
+import { login, logout} from "./authSlice";
+import { jwtDecode } from "jwt-decode";
 
-const authFirebaseDatasource = new AuthFirebaseDatasource();
+//const authFirebaseDatasource = new AuthFirebaseDatasource();
 
-const authRepository = new AuthRepository(authFirebaseDatasource);
+//const authRepository = new AuthRepository(authFirebaseDatasource);
 
 export const useAuthStore = () => {
 
   const dispatch = useDispatch();
 
+/* 
   const checkCredentials = () => {
-
     return async () => {
       dispatch(checkingCredentials());
     };
-  }
+  };
 
-  const startCreatingUserWithEmailPassword = async (formData: {[key: string]: string} ) => {
+  const startCreatingUserWithEmailPassword = async (token: string) => {
 
-    dispatch(checkingCredentials());
+    console.log(token)
 
-    const [error, userDto] = CreateUserDto.create(formData);
+    let decodedToken = null;
 
-    if(error){
-      console.log(error);
+    try {
+
+      decodedToken = jwtDecode(token);
+
+    } catch (error) {
+
+      dispatch(setMessage(error as string));
+      setTimeout(() => {
+        dispatch(setMessage(null));
+      }, 3000);
       return;
     }
-    
-    const user = await authRepository.createUser(userDto!);
+
+    const { aud } = decodedToken;
+
+    console.log(decodedToken)
+
+    const user = new User("dennis", aud as string);
 
     dispatch(login(user));
-  }
-
-  const startGoogleSingIn = async ()=> {
-
+  };
+ 
+  
+  const startGoogleSingIn = async () => {
     dispatch(checkingCredentials());
 
     const user = await authRepository.loginWithGoogle();
 
     dispatch(login(user));
+  };
+*/
 
-  }
+  const startLogin = async ( token: string) => {
 
-  const startLoginWithEmailAndPassword = async (formData: {[key: string]: string} ) => {
-
-    const [error, loginDto] = LoginDto.create(formData);
-
-    if(error){
-      console.log(error);
-      return;
-    }
-
-    const user = await authRepository.login(loginDto!); 
-
-    dispatch(login(user));
-  }
+    const decode = jwtDecode(token);
+      
+          const time = new Date().getSeconds();
+      
+          if(time > decode.exp!){
+            dispatch(logout());
+          }
+    
+          const {displayName, email} = decode as {[key: string]: string};
+      
+          dispatch(login({displayName: displayName, email: email}));
+  };
 
   const startLogout = async () => {
-
-    await authRepository.logout()
-
+    localStorage.removeItem('token');
     dispatch(logout());
-  }
-
+  };
 
   return {
-    checkCredentials,
-    startGoogleSingIn,
-    startCreatingUserWithEmailPassword,
-    startLoginWithEmailAndPassword,
-    startLogout
-  } 
-}; 
-
+    //checkCredentials,
+    //startGoogleSingIn,
+    //startCreatingUserWithEmailPassword,
+    startLogin,
+    startLogout,
+  };
+};

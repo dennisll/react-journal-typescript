@@ -37,9 +37,13 @@ export const authSlice = createSlice({
             state.status = 'checking';
             state.user = null;
             state.errorMessage = null;
-        }
+        },
+
+         setMessage: (state, action: PayloadAction<string | null>) => {
+            state.errorMessage = action.payload;
+         }
     },
 
 });
 
-export const {login, logout, checkingCredentials} = authSlice.actions;
+export const {login, logout, checkingCredentials, setMessage} = authSlice.actions;

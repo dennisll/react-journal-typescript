@@ -6,49 +6,73 @@ import Button from "@mui/material/Button";
 import Google from "@mui/icons-material/Google";
 import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
-import {Link as RouterLink} from 'react-router-dom';
-import type { FormEvent } from "react";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { useEffect, type FormEvent } from "react";
 import { useForm } from "../../../hooks/useForm";
+import { useLoginMutation } from "../../../redux/services/authApi";
+import { LoginDto } from "../../../../domain";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useAuthStore } from "../../../redux/authSlice/useAuthStore";
+import { useHandledError } from "../../../hooks/useHandledError";
 
-/* interface InitialForm{
-  email: string;
-  password: string;
-} */
 
 const initialForm = {
-  email: '',
-  password: '',
+  email: "",
+  password: "",
 };
 
 export const LoginPage = () => {
 
-  const {formState, onInputChange} = useForm(initialForm);
+  const {handledError, errorMessage} = useHandledError();
+  
+  const { formState, onInputChange} = useForm(initialForm, {});
 
-  const {
-    startLoginWithEmailAndPassword, 
-    startGoogleSingIn} = useAuthStore();
+  const {startLogin} = useAuthStore();
 
-  const onSubmit = (event: FormEvent)=>{
+  const navigate = useNavigate();
+
+  const [login, { isLoading, isError, isSuccess, data, error }] =
+    useLoginMutation();
+
+  const onSubmit = (event: FormEvent) => {
 
     event.preventDefault();
 
-    startLoginWithEmailAndPassword(formState);
+    const [error, loginDto] = LoginDto.create(formState);
 
-  }
+    if (error) {
+      handledError({errorDto: error});
+    }
 
- const onGoogleSignIn = async()=>{
+    login(loginDto!).catch((error) => console.error("rejected", error));
+  };
 
-    await startGoogleSingIn();
- }
+  const onGoogleSignIn = async () => {
+    //await startGoogleSingIn();
+  };
+
+  useEffect(()=>{
+
+    if(isError){
+
+      const typeError = error as FetchBaseQueryError;
+
+      handledError({error: typeError});
+    }
+
+    if(isSuccess){
+      localStorage.setItem('token', data!.token);
+      startLogin(data.token);
+      navigate('/register');
+    }
+  }, [isSuccess, isError]);
 
   return (
     <AuthLayout title="Login">
-
       <form
-      onSubmit={onSubmit}
-      className=' animate__animated animate__fadeIn animate__faster'
-      aria-label="submit-form"
+        onSubmit={onSubmit}
+        className=" animate__animated animate__fadeIn animate__faster"
+        aria-label="submit-form"
       >
         <Grid container>
           <Grid size={12} sx={{ mt: 2 }}>
@@ -75,9 +99,29 @@ export const LoginPage = () => {
             />
           </Grid>
 
-          <Grid size={12} sx={{ mt: 2 }} display={"none"}>
-            <Alert severity="error">Error</Alert>
+          <Grid
+            size={12}
+            sx={{ mt: 2 }}
+            //display={"none"}
+          >
+            {(isError) && (
+              <Alert severity="error">
+                {errorMessage}
+              </Alert>
+            )}
           </Grid>
+
+          <Grid
+              
+              container size={12} 
+              spacing={2}
+              justifyContent='end'
+              sx={{ mb: 2, mt: 1 }}
+            >
+              <Link component={RouterLink} color="inherit" to="/auth/email-to-reset-password">
+              Forgot your password
+            </Link>
+            </Grid>
 
           <Grid container size={12} spacing={2}>
             <Grid
@@ -90,7 +134,7 @@ export const LoginPage = () => {
                 variant="contained"
                 fullWidth
                 type="submit"
-                //disabled={isAuthenticated}
+                disabled={isLoading}
               >
                 Login
               </Button>
@@ -115,11 +159,31 @@ export const LoginPage = () => {
             </Grid>
           </Grid>
 
-          <Grid container sx={{ width: "100%" }} justifyContent="end">
-            <Link component={RouterLink} color="inherit" to="/auth/register">
+          <Grid container size={12} spacing={2}>
+
+            {/* <Grid
+              container
+              size={{ xs: 12, md: 6 }}
+              spacing={2}
+              sx={{ mb: 2, mt: 1 }}
+            >
+             <Link component={RouterLink} color="inherit" to="/auth/register">
+              Forgot your password
+            </Link>
+            </Grid> */}
+
+            <Grid
+              container size={12} 
+              spacing={2}
+              justifyContent='end'
+              sx={{ mb: 2, mt: 1 }}
+            >
+              <Link component={RouterLink} color="inherit" to="/auth/register">
               Crear una cuenta
             </Link>
+            </Grid>
           </Grid>
+
         </Grid>
       </form>
     </AuthLayout>
