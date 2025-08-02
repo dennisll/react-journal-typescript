@@ -95,7 +95,6 @@ export const EmailPage = () => {
           <Grid
             size={12}
             sx={{ mt: 2 }}
-            //display={"none"}
           >
             {(isError || errorMessage.length > 2) && !isSuccess && (
               <Alert severity="error">
@@ -107,7 +106,6 @@ export const EmailPage = () => {
           <Grid
             size={12}
             sx={{ mt: 2 }}
-            //display={"none"}
           >
             {isSuccess && <Alert severity="success">{errorMessage}</Alert>}
           </Grid>

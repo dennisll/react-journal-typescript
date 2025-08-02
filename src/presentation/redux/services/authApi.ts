@@ -14,7 +14,6 @@ export const authApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["ValidateEmail"],
   endpoints: (builder) => ({
     
     registerUser: builder.mutation<{ [key: string]: string }, CreateUserDto>({

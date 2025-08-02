@@ -65,9 +65,9 @@ export const useAuthStore = () => {
             dispatch(logout());
           }
     
-          const {displayName, email} = decode as {[key: string]: string};
+          const {displayName, email, id} = decode as {[key: string]: string};
       
-          dispatch(login({displayName: displayName, email: email}));
+          dispatch(login({displayName: displayName, email: email, id: id}));
   };
 
   const startLogout = async () => {

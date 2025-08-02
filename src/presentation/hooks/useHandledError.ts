@@ -4,20 +4,25 @@ import { useState } from "react";
 interface ErrorResponse {
   error?: FetchBaseQueryError;
   errorDto?: string;
+  success?: boolean;
 }
 
 export const useHandledError = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   const handledError = (errorResponse: ErrorResponse) => {
-    if (errorResponse.errorDto) {
+
+    if(errorResponse.success){
+      setErrorMessage(
+        `${errorResponse.errorDto}`
+      );
+    }
+    else if (errorResponse.errorDto) {
       setErrorMessage(
         `${errorResponse.errorDto}, Enter the form data again and submit it`
       );
     } else if (typeof errorResponse.error!.status === "number") {
       const { data } = errorResponse.error!;
-
-      console.log(data);
 
       if (typeof data === "object" && data !== null) {
         const keys = Object.keys(data);

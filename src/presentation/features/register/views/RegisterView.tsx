@@ -9,30 +9,43 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import type { PickerValue } from "@mui/x-date-pickers/internals";
-import { Card, CardMedia, IconButton } from "@mui/material";
+import { Alert, Card, CardMedia, IconButton } from "@mui/material";
 
 import { UpdateRegisterField } from "../components/UpdateRegisterField";
 import { useEffect, useState } from "react";
 import { AddOutlined } from "@mui/icons-material";
 import { useGetLocation } from "../../../hooks/useGetLocation";
+import { useGetRegistersQuery } from "../../../redux/services/registerApi";
+import { useHandledError } from "../../../hooks/useHandledError";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
 
 export const RegisterView = () => {
-  const { onCreateRegister, onGetRegisters } = useRegisterStore();
   const { user } = useAppSelector((state) => state.auth);
-  const { registers} = useAppSelector((state) => state.register);
+  //  const { registers } = useAppSelector((state) => state.register);
+  const { handledError, errorMessage } = useHandledError();
   const navigate = useNavigate();
-
   const { location, setCustomLocation } = useGetLocation();
-
   const [value, setValue] = useState<Dayjs | null>(null); //dayjs('2022-04-17T18:30')
+  const {
+    onCreateRegister,
+    isCreateSuccess,
+    isCreateError,
+    isCreateLoading,
+    errorWhileCreate,
+  } = useRegisterStore();
+  const { data, isError, isLoading, error } = useGetRegistersQuery(
+    { idUser: user!.id, date: value ? value?.toISOString() : "" },
+    { skip: value === null ? true : false }
+  );
 
   const navigatetoRegisters = () => {
     navigate(`/register/search?idUser=${user!.id}`);
   };
 
   const getRegisters = async (newValue: PickerValue) => {
-    onGetRegisters({ idUser: user!.id, data: newValue!.toString() });
+
     setValue(dayjs(newValue));
+    handledError({errorDto: '', success: true});
   };
 
   const createRegister = () => {
@@ -43,7 +56,22 @@ export const RegisterView = () => {
 
   useEffect(() => {
     setCustomLocation();
-  }, []);
+
+    if (isError || isCreateError) {
+      let typeError;
+
+      if (isError) typeError = error as FetchBaseQueryError;
+      if (isCreateError) typeError = errorWhileCreate as FetchBaseQueryError;
+
+      handledError({ error: typeError });
+    }
+
+    if (isCreateSuccess) {
+
+      handledError({ errorDto: "Register created correctly", success: true});
+    }
+
+  }, [isCreateSuccess,isCreateError, isError]);
 
   return (
     <>
@@ -83,7 +111,7 @@ export const RegisterView = () => {
             <Card>
               <CardMedia
                 component="img"
-                sx={{ borderRadius: "300px" }} 
+                sx={{ borderRadius: "300px" }}
                 image="/src/assets/trabajo-equipo-ti-recluit.jpg"
                 alt="Imagen con bordes redondeados"
               />
@@ -113,8 +141,21 @@ export const RegisterView = () => {
               </LocalizationProvider>
             </Grid>
 
+            {((isError || isCreateError) && errorMessage.length>2) ? (
+              <Grid sx={{ mt: 2 }}>
+                <Alert severity="error"
+                >{errorMessage}</Alert>
+              </Grid>
+            ) : null}
+
+            {(isCreateSuccess && errorMessage.length>2) ? (
+              <Grid sx={{ mt: 2 }}>
+                <Alert severity="success">{errorMessage}</Alert>
+              </Grid>
+            ) : null}
+
             {value !== null
-              ? registers?.map((register) => (
+              ? data?.map((register) => (
                   <UpdateRegisterField
                     key={register.id}
                     register={{ ...register }}
@@ -133,7 +174,8 @@ export const RegisterView = () => {
                 right: 50,
                 bottom: 50,
               }}
-              disabled={value !== null}
+              //disabled={value !== null}
+              disabled={isCreateLoading}
               onClick={createRegister}
             >
               <AddOutlined sx={{ fontSize: 30 }} />

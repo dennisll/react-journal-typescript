@@ -4,6 +4,7 @@ import { clientSlice } from './clientSlice/clientSlice';
 import { registerSlice } from './registerSlice/registerSlice';
 import { journalSlice } from './journalSlice/journalSlice';
 import { authApi } from './services/authApi';
+import { registerApi } from './services/registerApi';
 // ...
 
 export const store = configureStore({
@@ -16,6 +17,7 @@ export const store = configureStore({
 
     //services
     authApi: authApi.reducer,
+    registerApi: registerApi.reducer
   },
 
   middleware: (getDefaultMiddleware) =>
@@ -28,7 +30,7 @@ export const store = configureStore({
           'authApi/executeMutation/fulfilled',
           'auth/setMessage',
           'authApi/executeQuery/fulfilled',
-          'authApi/executeQuery/fulfilled',
+          'authApi/executeQuery/rejected',
           'client/setActiveClient', 
           'client/setClients', 
           'client/setUpdateClient',
@@ -40,6 +42,10 @@ export const store = configureStore({
           'journal/createJournal',
           'journal/setJournals',
           'journal/setActiveJournal',
+          'registerApi/executeMutation/rejected',
+          'registerApi/executeMutation/fulfilled',
+          'registerApi/executeQuery/fulfilled',
+          'registerApi/executeQuery/rejected'
         ],
         // Ignore these field paths in all actions
         ignoredActionPaths: ['meta.arg', 'payload.timestamp'],
@@ -51,11 +57,12 @@ export const store = configureStore({
           'register.registers',
           'journal.journals',
           `journal.active`,
-          'auth.errorMessage'
+          'auth.errorMessage',
+          'registerApi.queries'
           ],
       },
 
-    }).concat(authApi.middleware)
+    }).concat(authApi.middleware).concat(registerApi.middleware)
 });
 
 //setupListeners(store.dispatch)

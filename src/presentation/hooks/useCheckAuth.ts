@@ -24,15 +24,14 @@ export const useCheckAuth = () => {
     if (token !== null) {
       const decode = jwtDecode(token);
 
-      const time = new Date().getSeconds();
+      const time = Date.now()/1000;
 
       if (time > decode.exp!) {
         dispatch(logout());
+      } else {
+        const { displayName, email, id } = decode as { [key: string]: string };
+        dispatch(login({ displayName: displayName, email: email, id }));
       }
-
-      const { displayName, email } = decode as { [key: string]: string };
-
-      dispatch(login({ displayName: displayName, email: email }));
     }
   }, []);
 

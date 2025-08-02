@@ -6,15 +6,18 @@ import { useAppSelector } from "../../../redux/reduxHooks";
 import { Button, CircularProgress, Toolbar } from "@mui/material";
 import type { Register } from "../../../../domain/entities/register";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { useGetRegistersQuery } from "../../../redux/services/registerApi";
 
 export const RegisterSearchView = () => {
   const { onGetRegisters, onDeleteRegister, onSetActiveRegister } =
     useRegisterStore();
-  const { registers, isLoading, active } = useAppSelector((state) => state.register);
+  //const { registers, isLoading, active } = useAppSelector((state) => state.register);
 
   const params = new URLSearchParams(location.search);
   const idUser = params.get("idUser") ? (params.get("idUser") as string) : "";
-  const data = params.get("data") ? (params.get("data") as string) : "";
+  //const date = params.get("data") ? (params.get("data") as string) : "";
+
+  const {data, isError, isSuccess, isLoading} = useGetRegistersQuery({idUser});
 
   const deleteRegister = (register: Register) => {
     onSetActiveRegister(register);
@@ -22,12 +25,12 @@ export const RegisterSearchView = () => {
   };
 
   useEffect(() => {
-    onGetRegisters({ idUser, data });
+    //onGetRegisters({ idUser, date});
   }, []);
 
   return (
     <Grid>
-      {registers?.map((register) => (
+      {data?.map((register) => (
         <Grid key={register.id} container sx={{ display: "flex" }}>
           <Toolbar>
             <Typography sx={{ mr: 2 }}>{register.createdAt}</Typography>
