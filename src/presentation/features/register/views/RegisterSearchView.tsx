@@ -1,52 +1,117 @@
 import Grid from "@mui/material/Grid";
-import Typography from "@mui/material/Typography";
-import { useRegisterStore } from "../../../redux/registerSlice/useRegisterStore";
-import { useEffect } from "react";
-import { useAppSelector } from "../../../redux/reduxHooks";
-import { Button, CircularProgress, Toolbar } from "@mui/material";
-import type { Register } from "../../../../domain/entities/register";
-import DeleteIcon from "@mui/icons-material/Delete";
+import {
+  Alert,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
+} from "@mui/material";
+import Paper from "@mui/material/Paper";
 import { useGetRegistersQuery } from "../../../redux/services/registerApi";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
+import { useHandledError } from "../../../hooks/useHandledError";
+import { Checking } from "../../../shared/components/Checking";
+import { useEffect, useState } from "react";
+
+const titles = ["Date", "Time", "Lat", "Long"];
 
 export const RegisterSearchView = () => {
-  const { onGetRegisters, onDeleteRegister, onSetActiveRegister } =
-    useRegisterStore();
-  //const { registers, isLoading, active } = useAppSelector((state) => state.register);
 
   const params = new URLSearchParams(location.search);
   const idUser = params.get("idUser") ? (params.get("idUser") as string) : "";
   //const date = params.get("data") ? (params.get("data") as string) : "";
 
-  const {data, isError, isSuccess, isLoading} = useGetRegistersQuery({idUser});
+  const { data, isError, isSuccess, isLoading, error } = useGetRegistersQuery({
+    idUser,
+  });
 
-  const deleteRegister = (register: Register) => {
-    onSetActiveRegister(register);
-    onDeleteRegister(register.id);
+  const { handledError, errorMessage } = useHandledError();
+
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setRowsPerPage(+event.target.value);
+    setPage(0);
   };
 
   useEffect(() => {
-    //onGetRegisters({ idUser, date});
-  }, []);
+    if (isError) {
+      const typeError = error as FetchBaseQueryError;
+      handledError({ error: typeError });
+    }
+  }, [isError]);
 
   return (
     <Grid>
-      {data?.map((register) => (
-        <Grid key={register.id} container sx={{ display: "flex" }}>
-          <Toolbar>
-            <Typography sx={{ mr: 2 }}>{register.createdAt}</Typography>
-            <Typography sx={{ mr: 2 }}>{register.lat}</Typography>
-            <Typography sx={{ mr: 2 }}>{register.long}</Typography>
-            <Typography sx={{ mr: 2 }}>{register.imageUrl}</Typography>
-            {/* <Button onClick={() => updateRegister(register)}>Edit</Button> */}
+      {isLoading ? <Checking /> : null}
 
-            {(isLoading && active?.id === register.id) ? (
-              <CircularProgress />
-            ) : (
-              <Button onClick={() => deleteRegister(register)}><DeleteIcon sx={{color: 'error.main'}}/> </Button>
-            )}
-          </Toolbar>
+      {isSuccess ? (
+        <Paper sx={{ width: "100%", overflow: "hidden" }}>
+          <TableContainer sx={{ maxHeight: 440 }}>
+            <Table stickyHeader aria-label="sticky table">
+              <TableHead>
+                <TableRow>
+                  {titles.map((title) => (
+                    <TableCell key={title} align="center">
+                      {title}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {data
+                  ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((register) => {
+                    return (
+                      <TableRow
+                        hover
+                        role="checkbox"
+                        tabIndex={-1}
+                        key={register.id}
+                      >
+                        <TableCell align="center">
+                          {register.createdAt.substring(0, 10)}
+                        </TableCell>
+                        <TableCell align="center">
+                          {new Date(register.createdAt).toLocaleTimeString(
+                            "en-US"
+                          )}
+                        </TableCell>
+                        <TableCell align="center">{register.lat}</TableCell>
+                        <TableCell align="center">{register.long}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TablePagination
+            rowsPerPageOptions={[10, 25, 100]}
+            component="div"
+            count={data!.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </Paper>
+      ) : null}
+
+      {isError && errorMessage.length > 2 ? (
+        <Grid sx={{ mt: 2 }}>
+          <Alert severity="error">{errorMessage}</Alert>
         </Grid>
-      ))}
+      ) : null}
     </Grid>
   );
 };

@@ -1,63 +1,60 @@
 export class UpdateJournalDto {
   private constructor(
     public readonly id: string,
-    public readonly title: string,
-    public readonly description: string,
-    public readonly createdAt: string,
-    public readonly idClient: string,
+    public readonly createdAt: Date,
+    public readonly updatedAt: Date,
     public readonly idUser: string,
-    public readonly idWorkers?: string[],
+    public readonly title?: string,
+    public readonly description?: string,
+    public readonly nameClient?: string,
     public readonly imageUrls?: string[]
   ) {}
 
-  get values() {
-    const returnObject: { [key: string]: unknown } = {};
+  get values(){
 
-    if (this.title) returnObject.title = this.title;
-    if (this.description) returnObject.description = this.description;
-    if (this.idClient) returnObject.idClient = this.idClient;
-    if (this.idUser) returnObject.idUser = this.idUser;
-    if (this.createdAt) returnObject.createdAt = this.createdAt;
-    if (this.idWorkers) returnObject.createdAt = this.createdAt;
-    if (this.imageUrls) returnObject.createdAt = this.createdAt;
+    const returnObject: {[key:string]: any} = {}
+
+    //if ( this.id ) returnObject.id = this.id;
+    if ( this.title ) returnObject.title = this.title;
+    if ( this.description ) returnObject.description = this.description;
+    if ( this.nameClient ) returnObject.nameClient = this.nameClient;
+    if ( this.createdAt ) returnObject.createdAt = this.createdAt;
+    if ( this.idUser ) returnObject.idUser = this.idUser;
+    if ( this.imageUrls ) returnObject.imageUrls = this.imageUrls;
 
     return returnObject;
-  }
+}
 
   static create(object: {
     [key: string]: any;
   }): [string?, UpdateJournalDto?] {
-    const {
-      id,
-      title,
-      description,
-      createdAt,
-      idClient,
-      idUser,
-      idWorkers,
-      imageUrls,
-    } = object;
 
-    if (!id) return ["Id property is required", undefined];
+    const { id, title, description, nameClient, idUser, createdAt, imageUrls = [] } =
+      object;
+
     if (!title) return ["Title property is required", undefined];
     if (!description) return ["Description property is required", undefined];
-    if (!createdAt) return ["CreatedAt property is required", undefined];
-    if (!idClient) return ["IdClient property is required", undefined];
-    if (!idUser) return ["IdClient property is required", undefined];
-    const newCreatedAt = new Date(createdAt);
-    if (newCreatedAt.toString() === "Invalid Date")
+    if (!nameClient) return ["NameClient property is required", undefined];
+    if (!idUser) return ["IdUser property is required", undefined];
+    if (!nameClient) return ["NameClient property is required", undefined];
+    if(imageUrls.length > 0){
+       if(typeof imageUrls[0] !== 'string') return ["Error durante la seleccion de los files", undefined];
+    }
+    if (createdAt.toString() === "Invalid Date")
       return ["CreatedAt must be a valid date"];
+
+    const updatedAt = new Date();
 
     return [
       undefined,
       new UpdateJournalDto(
         id,
+        createdAt,
+        updatedAt,
+        idUser,
         title,
         description,
-        newCreatedAt.toISOString(),
-        idClient,
-        idUser,
-        idWorkers,
+        nameClient,
         imageUrls
       ),
     ];

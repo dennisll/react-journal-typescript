@@ -2,7 +2,7 @@ import Grid from "@mui/material/Grid";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { TimeField } from "@mui/x-date-pickers/TimeField";
-import dayjs, { Dayjs } from "dayjs";
+import dayjs, { Dayjs} from "dayjs";
 import type { Register } from "../../../../domain/entities/register";
 import Button from "@mui/material/Button";
 import { Edit } from "@mui/icons-material";
@@ -37,16 +37,14 @@ export const UpdateRegisterField = (props: Props) => {
   };
 
   const updateRegister = () => {
+
     const register = { ...props.register, updatedAt: value!.toISOString() };
 
     const [error, registerDto] = UpdateRegisterDto.create({ ...register });
 
     if (error) {
-      console.log(error);
-      return;
+      handledError({ errorDto: error });
     }
-
-    if (isError) console.log(errorRegister);
 
     updateRegisterApi(registerDto!);
   };
@@ -56,11 +54,10 @@ export const UpdateRegisterField = (props: Props) => {
       setTimeout(() => {
         props.setValue(null);
       }, 2000);
-      handledError({ errorDto: "Request of updating sent correctly", success: true});
+      handledError({ errorDto: "Request of updating sent successly", success: true});
     }
 
     if (isError) {
-
           const typeError = errorRegister as FetchBaseQueryError;
           handledError({ error: typeError });
         }

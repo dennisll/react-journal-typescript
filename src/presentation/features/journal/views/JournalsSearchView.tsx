@@ -1,37 +1,53 @@
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { useEffect } from "react";
-import { useAppSelector } from "../../../redux/reduxHooks";
-import { Button, Toolbar } from "@mui/material";
-import { useJournalStore } from "../../../redux/journalSlice/useJournalStore";
+import { useAppDispatch} from "../../../redux/reduxHooks";
+import { Alert, Button, CircularProgress, Toolbar } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import type { Journal } from "../../../../domain";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import { useGetJournalsQuery } from "../../../redux/services/journalApi";
+import { useHandledError } from "../../../hooks/useHandledError";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
+import { setActiveJournal } from "../../../redux/journalSlice/journalSlice";
 
 export const JournalSearchView = () => {
 
-  const { onGetJournals, onSetActiveJournal } = useJournalStore();
+  const dispatch = useAppDispatch();
 
-  const {journals} = useAppSelector((state) => state.journal);
+  const { handledError, errorMessage } = useHandledError();
+
   const navigate = useNavigate();
 
-  const params = new URLSearchParams(location.search);
-  const idUser = params.get('idUser') ? params.get('idUser') as string : '';
-  const data = params.get('data') ? params.get('data') as string : '';
+  const {data, isSuccess, isLoading, isError, error} = useGetJournalsQuery({});
+
+  //const params = new URLSearchParams(location.search);
+  //const idUser = params.get('idUser') ? params.get('idUser') as string : '';
+  //const date = params.get('data') ? params.get('data') as string : '';
 
   const navigateToJournalView = (journal: Journal) => {
 
-    onSetActiveJournal(journal);
+    dispatch(setActiveJournal(journal));
      navigate(`/journal/${journal.id}`)
   }; 
 
-  useEffect(() => {
-    onGetJournals({idUser, data});
-  }, []);
+   useEffect(() => {
+      if (isError) {
+        const typeError = error as FetchBaseQueryError;
+        handledError({ error: typeError });
+      }
+    }, [isError]);
+  
 
   return (
-    <Grid>
-      {journals?.map((journal) => (
+
+    <>
+
+    {isLoading ? <CircularProgress /> : null}
+    
+    {isSuccess ? 
+    (<Grid>
+      {data?.map((journal) => (
         <Grid key={journal.id} container sx={{ display: "flex" }}>
           <Toolbar>
              <Typography sx={{ mr: 2 }}>
@@ -44,6 +60,14 @@ export const JournalSearchView = () => {
           </Toolbar>
         </Grid>
       ))}
-    </Grid>
+    </Grid>) : null}
+
+    {isError && errorMessage.length > 2 ? (
+              <Grid sx={{ mt: 2 }}>
+                <Alert severity="error">{errorMessage}</Alert>
+              </Grid>
+            ) : null}
+
+    </>
   );
 };

@@ -20,15 +20,22 @@ export const clientSlice = createSlice({
   initialState: initialState,
   reducers: {
 
-    setLoadingClient: (state, action: PayloadAction<boolean>) => {
-      state.isLoading = action.payload;
-      state.message = null;
-    },
-
-    setActiveClient: (state, action: PayloadAction<Client>) => {
+    setActiveClient: (state, action: PayloadAction<Client | null>) => {
       state.isLoading = false;
       state.active = action.payload;
     },
+
+    setClientsAfterLogout: (state) => {
+      /*       state.isLoading = false;
+            state.clients = [];
+            state.message = null; */
+            state.active = null;
+          },
+
+          /*    setLoadingClient: (state, action: PayloadAction<boolean>) => {
+      state.isLoading = action.payload;
+      state.message = null;
+    }, 
 
     setClients: (state, action: PayloadAction<Client[]>) => {
       state.isLoading = false;
@@ -44,12 +51,7 @@ export const clientSlice = createSlice({
       state.active = null;
     },
 
-    setClientsAfterLogout: (state) => {
-      state.isLoading = false;
-      state.clients = [];
-      state.message = null;
-      state.active = null;
-    },
+
 
     setMessage: (state, action: PayloadAction<string | null>) => {
         state.message = action.payload;
@@ -61,15 +63,16 @@ export const clientSlice = createSlice({
       state.clients = state.clients!.filter( client => (client.id !== action.payload.id));
       state.active = null;
     }
+      */
   },
 });
 
 export const {
-  setLoadingClient,
   setActiveClient,
-  setClients,
-  setUpdateClient,
   setClientsAfterLogout,
+/*   setClients,
+  setUpdateClient,
+  setLoadingClient,
   setMessage,
-  deleteClient
+  deleteClient */
 } = clientSlice.actions;

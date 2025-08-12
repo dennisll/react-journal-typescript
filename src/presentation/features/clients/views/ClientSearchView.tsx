@@ -1,84 +1,80 @@
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
-import { useClientStore } from "../../../redux/clientSlice/useClientStore";
 import { useEffect } from "react";
-import { useAppSelector } from "../../../redux/reduxHooks";
-import { CircularProgress, IconButton, ListItem, ListItemAvatar, Toolbar } from "@mui/material";
+import {
+  Alert,
+  Card,
+  CardActions,
+  CardContent,
+  IconButton,
+} from "@mui/material";
 import { Edit } from "@mui/icons-material";
 import type { Client } from "../../../../domain/entities/client";
 import { useNavigate } from "react-router-dom";
-import DeleteIcon from "@mui/icons-material/Delete";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import { useGetClientsQuery } from "../../../redux/services/clientApi";
+import { useHandledError } from "../../../hooks/useHandledError";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
+import { Checking } from "../../../shared/components/Checking";
+import { useAppDispatch } from "../../../redux/reduxHooks";
+import { setActiveClient } from "../../../redux/clientSlice/clientSlice";
 
 export const ClientSearchView = () => {
-  const { onGetClients, onActiveClient, onDeleteClient } = useClientStore();
+  
+  const dispatch = useAppDispatch();
 
-  const { clients, isLoading, active } = useAppSelector(
-    (state) => state.client
-  );
+  const {
+    data,
+    isError,
+    isLoading: isLoadingClients,
+    error,
+  } = useGetClientsQuery({});
+  const { handledError, errorMessage } = useHandledError();
 
   const navigate = useNavigate();
 
   const navigateToClient = (client: Client) => {
-    onActiveClient(client);
+    dispatch(setActiveClient(client));
     navigate("/client");
   };
 
-  const deleteClient = async (client: Client) => {
-    onActiveClient(client);
-    onDeleteClient(client);
-  };
-
   useEffect(() => {
-    onGetClients();
-  }, []);
+    if (isError) {
+      const typeError = error as FetchBaseQueryError;
+      handledError({ error: typeError });
+    }
+  }, [isError]);
 
   return (
-    <Grid>
-      {clients?.map((client) => (
-        <Grid
-          key={client.id}
-          container
-          direction="column"
-          alignItems="flex-start"
-          sx={{
-            //display: 'flex',
-            width: { xs: 12 },
-          }}
-        >
-          <Toolbar>
-            <ListItem>
-              <ListItemAvatar sx={{ mr: 1 }}>
-                <CheckCircleOutlineIcon />
-              </ListItemAvatar>
-
-              <Grid size={6} sx={{ mr: 2 }}>
-                <Typography sx={{ mr: 2 }}>
-                  {client.name.toUpperCase()}
-                </Typography>
-              </Grid>
-
-              <Grid sx={{ display: "flex" }}>
-                <IconButton onClick={() => navigateToClient(client)}>
-                  <Edit sx={{color: 'primary.main'}} />
-                </IconButton>
-
-                <IconButton
-                  disabled={isLoading && active?.id === client.id }
-                  onClick={() => deleteClient(client)}
-                  edge="end"
-                  aria-label="delete"
-                  sx={{ mr: 10}}
-                >
-                  {(isLoading && active?.id === client.id) ? <CircularProgress /> : <DeleteIcon sx={{color: 'error.main'}}/> }
-                  
-                </IconButton>
-
-              </Grid>
-            </ListItem>
-          </Toolbar>
+    <>
+      {isError && errorMessage.length > 2 ? (
+        <Grid sx={{ mt: 2 }}>
+          <Alert severity="error">{errorMessage}</Alert>
         </Grid>
-      ))}
-    </Grid>
+      ) : null}
+
+      {isLoadingClients ? <Checking /> : (<Grid>
+        {data?.map((client) => (
+          <Card key={client.id} variant="outlined" sx={{ mt: 2 }}>
+            <CardContent>
+              <Typography
+                variant="h5"
+                component="h2"
+                color="textSecondary"
+                gutterBottom
+              >
+                {client.name.toUpperCase()}
+              </Typography>
+              <Typography component="p">{client.description}</Typography>
+              <Typography component="p">{client.address}</Typography>
+            </CardContent>
+            <CardActions>
+              <IconButton onClick={() => navigateToClient(client)}>
+                <Edit sx={{ color: "primary.main" }} />
+              </IconButton>
+            </CardActions>
+          </Card>
+        ))}
+      </Grid>)}
+    </>
   );
 };

@@ -2,37 +2,59 @@ import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { useNavigate } from "react-router-dom";
-import { useRegisterStore } from "../../../redux/registerSlice/useRegisterStore";
 import { useAppSelector } from "../../../redux/reduxHooks";
 
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import type { PickerValue } from "@mui/x-date-pickers/internals";
-import { Alert, Card, CardMedia, IconButton } from "@mui/material";
+import {
+  Alert,
+  Card,
+  CardMedia,
+  CircularProgress,
+  IconButton,
+} from "@mui/material";
 
 import { UpdateRegisterField } from "../components/UpdateRegisterField";
 import { useEffect, useState } from "react";
 import { AddOutlined } from "@mui/icons-material";
 import { useGetLocation } from "../../../hooks/useGetLocation";
-import { useGetRegistersQuery } from "../../../redux/services/registerApi";
+import {
+  useCreateRegisterMutation,
+  useGetRegistersQuery,
+  useUploadImagesMutation,
+} from "../../../redux/services/registerApi";
 import { useHandledError } from "../../../hooks/useHandledError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
+import { CreateRegisterDto } from "../../../../domain";
+import { Camera } from "../components/Camera";
+import { base64ToFile } from "../../../helpers/converterBase64ToFile";
+import { UploadFileDto } from "../../../../domain/dtos/files/uploadFilesDto";
 
 export const RegisterView = () => {
+
   const { user } = useAppSelector((state) => state.auth);
-  //  const { registers } = useAppSelector((state) => state.register);
   const { handledError, errorMessage } = useHandledError();
   const navigate = useNavigate();
   const { location, setCustomLocation } = useGetLocation();
   const [value, setValue] = useState<Dayjs | null>(null); //dayjs('2022-04-17T18:30')
-  const {
+
+  const [showCam, setShowCam] = useState(false);
+  const [imageData, setImageData] = useState<string | null>(null);
+
+  const [
     onCreateRegister,
-    isCreateSuccess,
-    isCreateError,
-    isCreateLoading,
-    errorWhileCreate,
-  } = useRegisterStore();
+    {
+      isError: isCreateError,
+      isLoading: isCreateLoading,
+      isSuccess: isCreateSuccess,
+      error: errorWhileCreate,
+    },
+  ] = useCreateRegisterMutation();
+
+  const [uploadImage] = useUploadImagesMutation();
+
   const { data, isError, isLoading, error } = useGetRegistersQuery(
     { idUser: user!.id, date: value ? value?.toISOString() : "" },
     { skip: value === null ? true : false }
@@ -43,16 +65,62 @@ export const RegisterView = () => {
   };
 
   const getRegisters = async (newValue: PickerValue) => {
-
     setValue(dayjs(newValue));
-    handledError({errorDto: '', success: true});
+    handledError({ errorDto: "", success: true });
   };
 
-  const createRegister = () => {
+  const createRegister = (imageData: string) => {
     const userId = user!.id;
     const errorLocation = location[0] ? location[0] : "";
-    onCreateRegister({ userId, ...location[1], errorLocation });
+
+    if (errorLocation) {
+      handledError({ errorDto: errorLocation });
+    }
+
+    const { lat, long } = location[1]!;
+
+    const [error, registerDto] = CreateRegisterDto.create({
+      idUser: userId,
+      lat,
+      long,
+      imageUrl: imageData,
+    });
+
+    if (error) {
+      handledError({ errorDto: error });
+    }
+
+    onCreateRegister(registerDto!);
+
+    setShowCam(true);
   };
+
+  const getImageUrl = async () => {
+
+    const parts = imageData!.split(';base64,');
+    const mimeType = parts[0].split(':')[1];
+    const type = mimeType.split('/')[1];
+
+    const image = base64ToFile(imageData!, `image.${type}`);
+    
+    const [errorImage, imageDto] = UploadFileDto.create(image);
+
+    if (errorImage) {
+      handledError({ errorDto: errorImage });
+    } 
+
+    const imageUrl =  await uploadImage(imageDto!.formData);
+
+    if (imageUrl.error) {
+      const typeError = imageUrl.error as FetchBaseQueryError;
+      handledError({ error: typeError });
+    }
+    
+    createRegister(imageUrl.data![0]);
+    setShowCam(false);
+    setImageData(null);
+  }
+
 
   useEffect(() => {
     setCustomLocation();
@@ -67,11 +135,10 @@ export const RegisterView = () => {
     }
 
     if (isCreateSuccess) {
-
-      handledError({ errorDto: "Register created correctly", success: true});
+      handledError({ errorDto: "Register created correctly", success: true });
     }
 
-  }, [isCreateSuccess,isCreateError, isError]);
+  }, [isCreateSuccess, isCreateError, isError]); 
 
   return (
     <>
@@ -107,16 +174,22 @@ export const RegisterView = () => {
             padding: 2,
           }}
         >
-          <Grid sx={{ pb: 5 }}>
-            <Card>
-              <CardMedia
-                component="img"
-                sx={{ borderRadius: "300px" }}
-                image="/src/assets/trabajo-equipo-ti-recluit.jpg"
-                alt="Imagen con bordes redondeados"
-              />
-            </Card>
-          </Grid>
+          {showCam ? (
+            <Grid sx={{mb:3}}>
+              <Camera setValue={setImageData} sendImage={getImageUrl} />
+            </Grid>
+          ) : (
+            <Grid sx={{ pb: 5 }}>
+              <Card>
+                <CardMedia
+                  component="img"
+                  sx={{ borderRadius: "300px" }}
+                  image="/src/assets/trabajo-equipo-ti-recluit.jpg"
+                  alt="Imagen con bordes redondeados"
+                />
+              </Card>
+            </Grid>
+          )}
 
           <Grid>
             <Grid sx={{ display: "flex" }}>
@@ -141,14 +214,19 @@ export const RegisterView = () => {
               </LocalizationProvider>
             </Grid>
 
-            {((isError || isCreateError) && errorMessage.length>2) ? (
-              <Grid sx={{ mt: 2 }}>
-                <Alert severity="error"
-                >{errorMessage}</Alert>
+            {isLoading ? (
+              <Grid>
+                <CircularProgress />
               </Grid>
             ) : null}
 
-            {(isCreateSuccess && errorMessage.length>2) ? (
+            {(isError || isCreateError) && errorMessage.length > 2 ? (
+              <Grid sx={{ mt: 2 }}>
+                <Alert severity="error">{errorMessage}</Alert>
+              </Grid>
+            ) : null}
+
+            {isCreateSuccess && errorMessage.length > 2 ? (
               <Grid sx={{ mt: 2 }}>
                 <Alert severity="success">{errorMessage}</Alert>
               </Grid>
@@ -174,9 +252,8 @@ export const RegisterView = () => {
                 right: 50,
                 bottom: 50,
               }}
-              //disabled={value !== null}
               disabled={isCreateLoading}
-              onClick={createRegister}
+              onClick={() => setShowCam(true)}
             >
               <AddOutlined sx={{ fontSize: 30 }} />
             </IconButton>
